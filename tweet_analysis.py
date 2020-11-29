@@ -8,7 +8,7 @@ from datetime import datetime
 
 from resources import config
 
-
+#17862 in first batch
 DB_FILE = r"resources\tweets.db"
 LOG = r"resources\log.txt"
 TERMS = [
@@ -62,7 +62,8 @@ def get_tweets(params):
             params = tweets["search_metadata"]["next_results"]
 
     except KeyError as e:
-        log(str(e))
+        log(f'retreived all terms for: {tweets["search_metadata"]["query"][3:]}')
+        return None
 
     return params
 
@@ -94,11 +95,42 @@ def store_tweets(tweets, tag):
 
 
 def loop_tweets():
-    params = [f'?q=%23{q}&count=1&result_type=recent' for q in TERMS]
-    while True:
+    since_id = find_since()
+
+    print(f"starting from: {since_id}")
+
+    if len(since_id) != len(TERMS):
+        raise NotImplementedError("no implementation for missing tags")
+
+    params = [f'?q=%23{q}&count=100&result_type=recent&since_id={since_id[q]}' for q in TERMS]
+
+    running = [True] * len(TERMS)
+
+    while any(running):
+        i = 0
         for i in range(len(TERMS)):
+            if not running[i]:
+                continue
             params[i] = get_tweets(params[i])
+            if params[i] is None:   # To run unneeded code
+                running[i] = False
+                continue
+
+            params[i] += f'&since_id=' + since_id[TERMS[i]]
+        print("\n")
         time.sleep(10)
+    
+    print("done")
+
+
+def find_since():
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute('SELECT tag, MAX(id) FROM tweets GROUP BY tag')
+    r = c.fetchall()
+    conn.close()
+    return {key: value for key, value in r}
+
 
 
 def tweet_analysis():
@@ -112,7 +144,6 @@ def tweet_analysis():
 
 FUNCTION_MAP = {
     's': setup,
-    'g': get_tweets,
     'a': tweet_analysis,
     'l': loop_tweets
 }
