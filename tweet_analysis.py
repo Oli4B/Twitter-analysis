@@ -118,7 +118,7 @@ def loop_tweets():
 
             params[i] += f'&since_id=' + since_id[TERMS[i]]
         print("\n")
-        time.sleep(10)
+        time.sleep(1)
     
     print("done")
 
