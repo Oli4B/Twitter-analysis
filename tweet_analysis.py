@@ -6,6 +6,7 @@ import requests
 
 from datetime import datetime
 
+import classifier
 from resources import config
 
 #17862 in first batch
@@ -119,7 +120,7 @@ def loop_tweets():
             params[i] += f'&since_id=' + since_id[TERMS[i]]
         print("\n")
         time.sleep(1)
-    
+
     print("done")
 
 
@@ -132,13 +133,19 @@ def find_since():
     return {key: value for key, value in r}
 
 
-
 def tweet_analysis():
     """
     TODO.
 
     :raises NotImplementedError: [description]
     """
+
+    #get all tweets
+    # preproc some tweets
+    #get sim matrix
+    # get classifiers and train model
+    # 
+
     raise NotImplementedError
 
 
