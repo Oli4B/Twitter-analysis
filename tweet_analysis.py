@@ -140,9 +140,12 @@ def tweet_analysis():
     :raises NotImplementedError: [description]
     """
 
-    #get all tweets
+    # get all tweets
+    # filter twteets
+    # meer dan 5 tags, spam accounts, niet nl tweets, RT moeten meetellen met pos en neg reacties. maar spammers negeren.
+    # 
     # preproc some tweets
-    #get sim matrix
+    # get sim matrix
     # get classifiers and train model
     # 
 
