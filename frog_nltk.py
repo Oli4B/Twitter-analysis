@@ -26,17 +26,23 @@ def store_nltk():
     tweets = c.fetchall()
 
     print(f"Parsing {len(tweets)} tweets")
-    for tweet in tqdm(tweets):
-        if tweet[2].startswith("RT"):
-            continue
-        f = frog.Frog(
-            frog.FrogOptions(tok=False, morph=False, chunking=False, ner=False)
-            )
-        output = f.process(tweet[2])
+    result = []
 
-        c.execute(
-            'INSERT INTO frog_NLTK (tweet_id, output) VALUES (?,?)',
-            (tweet[0], json.dumps(output)))
+    f = frog.Frog(
+        frog.FrogOptions(tok=False, morph=False, chunking=False, ner=False)
+        )
+
+    for tweet in tqdm(tweets):
+        if tweet[2].startswith("RT") or tweet[3]!="nl":
+            continue
+    
+        output = f.process(tweet[2])
+        result.append((tweet[2], output))
+
+    print("Inserting into the database")
+    c.executemany(
+        'INSERT INTO frog_NLTK (tweet_id, output) VALUES (?,?)',
+        ([(r[0], r[1]) for r in result]))
 
     print("Done")
     conn.commit()
@@ -44,5 +50,5 @@ def store_nltk():
 
 
 if __name__ == "__main__":
-    setup()
+    # setup()
     store_nltk()
