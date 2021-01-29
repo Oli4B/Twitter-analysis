@@ -1,3 +1,4 @@
+"""Process the text of the tweets using FROG."""
 import sqlite3
 import json
 import frog
@@ -18,11 +19,12 @@ def setup():
     conn.close()
 
 def store_nltk():
+    """Fill the table."""
     print("Retreiving tweets...")
 
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
-    c.execute('SELECT * FROM "tweets"')
+    c.execute('SELECT * FROM "tweets" INNER JOIN "labels" ON tweets.id = labels.id')
     tweets = c.fetchall()
 
     print(f"Parsing {len(tweets)} tweets")
@@ -32,23 +34,21 @@ def store_nltk():
         frog.FrogOptions(tok=False, morph=False, chunking=False, ner=False)
         )
 
-    for tweet in tqdm(tweets):
-        if tweet[2].startswith("RT") or tweet[3]!="nl":
-            continue
-    
-        output = f.process(tweet[2])
-        result.append((tweet[2], output))
+    for tweet in tqdm(tweets):  
+        output = f.process(' '.join(json.loads(tweet[11])))
+        result.append((tweet[0], json.dumps(output)))
 
     print("Inserting into the database")
     c.executemany(
         'INSERT INTO frog_NLTK (tweet_id, output) VALUES (?,?)',
         ([(r[0], r[1]) for r in result]))
 
-    print("Done")
     conn.commit()
     conn.close()
 
+    print("Done")
+
 
 if __name__ == "__main__":
-    # setup()
+    setup()
     store_nltk()

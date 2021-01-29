@@ -129,3 +129,5 @@ resources/Example.json
 resources/log.txt
 resources/tweets.db
 resources/config.py
+
+*.db
